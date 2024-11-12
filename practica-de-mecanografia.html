@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Práctica de Mecanografía</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+  <div class="w-full max-w-lg p-6 bg-white rounded-lg shadow-lg">
+    <h1 class="text-2xl font-bold text-center mb-4">Práctica de Mecanografía</h1>
+    
+    <!-- Texto para practicar -->
+    <div id="textContainer" class="text-lg mb-4 font-mono bg-gray-200 p-4 rounded-md">
+      <span id="textToType">Cargando frase...</span>
+    </div>
+
+    <!-- Contadores de aciertos y fallos -->
+    <div class="flex justify-between mt-4">
+      <p>Aciertos: <span id="correctCount" class="text-green-500">0</span></p>
+      <p>Fallos: <span id="errorCount" class="text-red-500">0</span></p>
+    </div>
+
+    <!-- Botón de reinicio -->
+    <div class="text-center mt-6">
+      <button id="restartButton" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Reiniciar</button>
+    </div>
+  </div>
+
+  <script>
+    // Lista de frases para practicar
+    const phrases = [
+      "La práctica hace al maestro.",
+      "Es mejor prevenir que lamentar.",
+      "Más vale tarde que nunca.",
+      "A quien madruga Dios lo ayuda.",
+      "El saber no ocupa lugar.",
+      "La paciencia es una virtud.",
+      "Roma no se hizo en un día.",
+      "Quien mucho abarca poco aprieta.",
+      "No por mucho madrugar amanece más temprano.",
+      "A palabras necias, oídos sordos.",
+      "Dime con quién andas y te diré quién eres.",
+      "Más vale pájaro en mano que ciento volando.",
+      "El tiempo es oro.",
+      "El que mucho se despide, pocas ganas tiene de irse.",
+      "El hábito no hace al monje.",
+      "El que no arriesga no gana.",
+      "Haciendo y deshaciendo, se va aprendiendo.",
+      "Más vale prevenir que curar.",
+      "Perro que ladra no muerde.",
+      "En casa de herrero, cuchillo de palo.",
+      "Al mal tiempo, buena cara.",
+      "Barriga llena, corazón contento.",
+      "A buen entendedor, pocas palabras bastan.",
+      "De tal palo, tal astilla.",
+      "Cada quien con su cada cual.",
+      "Ojos que no ven, corazón que no siente.",
+      "Cuando el río suena, agua lleva.",
+      "Zapatero a tus zapatos.",
+      "A caballo regalado, no le mires el diente.",
+      "El que mucho abarca, poco aprieta.",
+      "El pez por la boca muere.",
+      "Más sabe el diablo por viejo que por diablo.",
+      "Más vale solo que mal acompañado.",
+      "A buen árbol se arrima, buena sombra le cobija.",
+      "No dejes para mañana lo que puedes hacer hoy.",
+      "A río revuelto, ganancia de pescadores.",
+      "En boca cerrada no entran moscas."
+    ];
+
+
+    let textToType = "";  // Frase seleccionada
+    let correctCount = 0;
+    let errorCount = 0;
+    let currentPosition = 0;
+
+    const textContainer = document.getElementById("textContainer");
+    const correctCountDisplay = document.getElementById("correctCount");
+    const errorCountDisplay = document.getElementById("errorCount");
+    const restartButton = document.getElementById("restartButton");
+
+    // Seleccionar una frase aleatoria de la lista
+    function loadPhrase() {
+      textToType = phrases[Math.floor(Math.random() * phrases.length)];
+      renderText();
+    }
+
+    // Renderizar la frase seleccionada
+    function renderText() {
+      textContainer.innerHTML = "";
+      for (let i = 0; i < textToType.length; i++) {
+        const span = document.createElement("span");
+        span.textContent = textToType[i];
+        span.classList.add("text-gray-600");
+        textContainer.appendChild(span);
+      }
+    }
+
+    // Filtrar teclas que no generan caracteres
+    function isValidKey(key) {
+      const invalidKeys = [
+        "Shift", "CapsLock", "Control", "Alt", "Tab", "Meta", "ArrowLeft",
+        "ArrowRight", "ArrowUp", "ArrowDown", "Backspace", "Escape", "Dead"
+      ];
+      return !invalidKeys.includes(key);
+    }
+
+    // Función de actualización de contadores y resaltado
+    function updateTyping(event) {
+      // Permitir reiniciar con Enter en cualquier momento
+      if (event.key === "Enter") {
+        restart();
+        return;
+      }
+
+      // Si la tecla no es válida, ignorar
+      if (!isValidKey(event.key)) {
+        event.preventDefault();
+        return;
+      }
+
+      const inputChar = event.key;
+      const currentLetter = textContainer.children[currentPosition];
+
+      // Si el usuario escribe el carácter correcto
+      if (inputChar === textToType[currentPosition]) {
+        currentLetter.classList.add("text-green-500");
+        currentLetter.classList.remove("text-red-500");
+        correctCount++;
+        currentPosition++; // Mover al siguiente carácter solo si es correcto
+        correctCountDisplay.textContent = correctCount;
+      } else {
+        // Si el carácter es incorrecto
+        currentLetter.classList.add("text-red-500");
+        currentLetter.classList.remove("text-green-500");
+        errorCount++;
+        errorCountDisplay.textContent = errorCount;
+      }
+
+      // Comprobar si hemos llegado al final del texto
+      if (currentPosition >= textToType.length) {
+        // Mostrar un mensaje de felicitación y reiniciar
+        setTimeout(() => {
+          alert("¡Felicitaciones, has completado el texto!");
+          restart();
+        }, 100);
+      }
+    }
+
+    // Reiniciar el texto y contadores
+    function restart() {
+      document.removeEventListener("keydown", updateTyping);
+
+      // Reiniciar los valores
+      currentPosition = 0;
+      correctCount = 0;
+      errorCount = 0;
+      correctCountDisplay.textContent = correctCount;
+      errorCountDisplay.textContent = errorCount;
+
+      // Cargar una nueva frase y volver a agregar el evento 'keydown'
+      loadPhrase();
+      document.addEventListener("keydown", updateTyping);
+
+      // Quitar el foco del botón de reinicio
+      restartButton.blur();
+    }
+
+    // Eventos
+    restartButton.addEventListener("click", restart);
+
+    // Inicializar aplicación
+    loadPhrase();
+    document.addEventListener("keydown", updateTyping);
+  </script>
+</body>
+</html>
